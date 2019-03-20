@@ -1,27 +1,36 @@
 import React, { Component } from 'react';
-import {Redirect} from "react-router-dom";
-
+import { connect } from 'react-redux';
+import {registerNick} from '../actions/index';
+import { Redirect} from "react-router-dom";
 
 class Join extends Component {
-    render() {
-    if(this.props.error===true) {
-        console.log('redirecting')
-        return <Redirect to="/error" />
-    
+    state = {
+      nick:null,
+      redirect: false
     }
 
-    return (
+    handleChange = (e)=>{
+      this.setState({nick:e.target.value});
+    }
+
+    handleClick = (e)=>{
+      // send message to server to register
+      // validate allowed names and check if nick is not in use already
+      this.props.socket.send(`/nick ${this.state.nick}`);
+      this.props.dispatch(registerNick(this.state.nick));
+      this.setState({redirect:true});
+    }
+
+    render() {
+      if(this.state.redirect===true) return <Redirect to="/chat" />
+      return (
         <div>
-          <h1>please joing!</h1>
-          { 
-              <ul>
-              { this.props.users.map(user => <li>{user.nick}</li>)}
-            </ul>  
-          }
-        
+          <h1>please join!</h1>
+          <input type="text" onChange={this.handleChange}/>
+          <button onClick={this.handleClick}>Join</button>                  
         </div>
       );
     }
 }
 
-export default Join;
+export default connect()(Join);
